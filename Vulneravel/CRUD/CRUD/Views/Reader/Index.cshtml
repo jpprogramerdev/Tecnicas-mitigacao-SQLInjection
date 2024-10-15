@@ -1,0 +1,28 @@
+﻿@model IEnumerable<Usuario>
+@{
+    Layout = "_Layout";
+
+    ViewData["Title"] = "Clientes cadastrados ";
+}
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nome</th>
+            <th scope="col">CPF</th>
+            <th scope="col">Tipo usuario</th>
+            <th scope="col">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(Usuario user in Model){
+            <tr>
+                <td>@user.Name</td>
+                <td>@user.Cpf</td>
+                <td>@user.Tipo.Description</td>
+                <td><a asp-controller="Update" asp-action="Index" asp-route-id="@user.Id">Editar</a></td>
+            </tr>
+        }   
+    </tbody>
+</table>
