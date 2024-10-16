@@ -14,9 +14,6 @@ namespace CRUD_Tg.Controllers{
             if (usuario != null){
                 
                     IDAO banco = new DAOMysql();
-                    banco.ConnectionDataBase();
-
-                    
 
                     if (banco.Insert(usuario)) {
                         TempData["Sucesso"] = "Usuario cadastrado";
