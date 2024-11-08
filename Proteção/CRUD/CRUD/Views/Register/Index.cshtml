@@ -1,0 +1,45 @@
+﻿@model Usuario;
+
+@{
+    Layout = "_Layout";
+    if (TempData["Sucesso"]!= null){
+        <p>@TempData["Sucesso"]</p>
+    }
+
+    ViewData["Title"] = "Registrar cliente ";
+}
+
+<form asp-controller="Register" asp-action="RegisterUsuario" method="POST">
+    <div class="form-group">
+        <label for="name_user">Nome:</label>
+        <input type="text" class="form-control" asp-for="@Model.Name" id="name_user"/>
+    </div>
+
+    <div class="form-group">
+        <label for="cpf_user">CPF:</label>
+        <input type="text" class="form-control" asp-for="@Model.Cpf" id="cpf_user" />
+    </div>
+
+    <div class="form-group">
+        <label for="tipousuario_user">Tipo de usuario:</label>
+        <select class="form-select" aria-label="Default select example" id="tipousuario_user" asp-for="@Model.Tipo.Id">
+            @{
+                IDAO daoMysql = new DAOMysql();
+                List<TipoUsuario> ListTipo = daoMysql.SelectTipos();
+
+                foreach(TipoUsuario tipo in ListTipo) {
+                    <option value="@tipo.Id">@tipo.Description</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="cpf_user">Senha:</label>
+        <input type="text" class="form-control" asp-for="@Model.Senha" id="cpf_user" />
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Cadastrar</button>
+    </div>
+</form>

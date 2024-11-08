@@ -15,19 +15,24 @@ namespace CRUD_Tg.DAO{
             StrConnection = connection; // a string devera conter: "server=;uid;pwd;database;"
         }
 
-        public bool Insert(Usuario usuario){
-            try{
-                string insert = "INSERT INTO Usuarios (USU_Nome, USU_Cpf, USU_Senha, USU_TPU_Id) values('" + usuario.Name + "','" + usuario.Cpf + "','" + usuario.Senha + "', " + usuario.Tipo.Id + ");";
+        public bool Insert(Usuario usuario) {
+            try {
+                string insert = "INSERT INTO Usuarios (USU_Nome, USU_Cpf, USU_Senha, USU_TPU_Id) VALUES (@Nome, @Cpf, @Senha, @TipoId);";
 
-                using(MySqlConnection conn = new(StrConnection)) {
-                    using (MySqlCommand query = new (insert, conn)) {
+                using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                    using (MySqlCommand query = new MySqlCommand(insert, conn)) {
+                        query.Parameters.AddWithValue("@Nome", usuario.Name);
+                        query.Parameters.AddWithValue("@Cpf", usuario.Cpf);
+                        query.Parameters.AddWithValue("@Senha", usuario.Senha);
+                        query.Parameters.AddWithValue("@TipoId", usuario.Tipo.Id);
+
                         conn.Open();
                         query.ExecuteNonQuery();
                     }
                 }
-                
+
                 return true;
-            }catch(Exception ex) {
+            } catch (Exception ex) {
                 return false;
             }
         }
@@ -37,8 +42,8 @@ namespace CRUD_Tg.DAO{
                 List<Usuario> usuarios = new List<Usuario>();
                 string select = "SELECT USU_Nome, TPU_TIPO, USU_Cpf, USU_Senha, USU_Id, TPU_Id FROM usuarios LEFT JOIN tipos_usuario ON USU_TPU_Id = TPU_Id;";
 
-                using (MySqlConnection conn = new(StrConnection)) {
-                    using (MySqlCommand query = new(select, conn)) {
+                using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                    using (MySqlCommand query = new MySqlCommand(select, conn)) {
                         conn.Open();
                         using (MySqlDataReader reader = query.ExecuteReader()) {
                             while (reader.Read()) {
@@ -49,7 +54,7 @@ namespace CRUD_Tg.DAO{
                                     reader.GetInt32(reader.GetOrdinal("USU_Id")),
                                     reader.GetString(reader.GetOrdinal("TPU_TIPO")),
                                     reader.GetInt32(reader.GetOrdinal("TPU_Id"))
-                                    ));
+                                ));
                             }
                         }
                     }
@@ -60,25 +65,18 @@ namespace CRUD_Tg.DAO{
             }
         }
 
-        public Usuario SelectUsuarioPorId(int Id) {
+        public Usuario SelectUsuarioPorId(int id) {
             try {
                 Usuario user = new Usuario();
-                string select = "SELECT " +
-                    "USU_Nome, " +
-                    "TPU_TIPO, " +
-                    "USU_Cpf, " +
-                    "USU_Senha, " +
-                    "USU_Id, " +
-                    "TPU_Id " +
-                    "FROM usuarios " +
-                    "LEFT JOIN tipos_usuario ON USU_TPU_Id = TPU_Id " +
-                    "WHERE USU_id = "+ Id + ";";
+                string select = "SELECT USU_Nome, TPU_TIPO, USU_Cpf, USU_Senha, USU_Id, TPU_Id FROM usuarios LEFT JOIN tipos_usuario ON USU_TPU_Id = TPU_Id WHERE USU_Id = @Id;";
 
-                using (MySqlConnection conn = new(StrConnection)) {
-                    using (MySqlCommand query = new(select, conn)) {
+                using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                    using (MySqlCommand query = new MySqlCommand(select, conn)) {
+                        query.Parameters.AddWithValue("@Id", id);
+
                         conn.Open();
                         using (MySqlDataReader reader = query.ExecuteReader()) {
-                            while (reader.Read()) {
+                            if (reader.Read()) {
                                 user = CriarUsuario.Criar(
                                     reader.GetString(reader.GetOrdinal("USU_Nome")),
                                     reader.GetString(reader.GetOrdinal("USU_Cpf")),
@@ -86,7 +84,7 @@ namespace CRUD_Tg.DAO{
                                     reader.GetInt32(reader.GetOrdinal("USU_Id")),
                                     reader.GetString(reader.GetOrdinal("TPU_TIPO")),
                                     reader.GetInt32(reader.GetOrdinal("TPU_Id"))
-                                    );
+                                );
                             }
                         }
                     }
@@ -101,17 +99,15 @@ namespace CRUD_Tg.DAO{
             string select = "SELECT * FROM TIPOS_USUARIO;";
             List<TipoUsuario> tipoUsuarios = new();
 
-            using (MySqlConnection conn = new(StrConnection)) {
-                using (MySqlCommand query = new(select, conn)) {
+            using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                using (MySqlCommand query = new MySqlCommand(select, conn)) {
                     conn.Open();
                     using (MySqlDataReader reader = query.ExecuteReader()) {
                         while (reader.Read()) {
-                            tipoUsuarios.Add(
-                                new TipoUsuario {
-                                    Id = reader.GetInt32(reader.GetOrdinal("TPU_Id")),
-                                    Description = reader.GetString(reader.GetOrdinal("TPU_TIPO"))
-                                }
-                                );
+                            tipoUsuarios.Add(new TipoUsuario {
+                                Id = reader.GetInt32(reader.GetOrdinal("TPU_Id")),
+                                Description = reader.GetString(reader.GetOrdinal("TPU_TIPO"))
+                            });
                         }
                     }
                 }
@@ -120,15 +116,18 @@ namespace CRUD_Tg.DAO{
         }
 
         public Usuario SelectUsuarioLogin(Usuario UsuarioLogin) {
-            string select = "SELECT * FROM USUARIOS INNER JOIN TIPOS_USUARIO ON TPU_ID = USU_TPU_ID WHERE USU_CPF = '" + UsuarioLogin.Cpf + "' AND USU_SENHA = '" + UsuarioLogin.Senha + "' ;";
+            string select = "SELECT * FROM USUARIOS INNER JOIN TIPOS_USUARIO ON TPU_ID = USU_TPU_ID WHERE USU_CPF = @CPF AND USU_SENHA = @Senha;";
 
             Usuario usuarioAchado = new();
-  
-            using (MySqlConnection conn = new(StrConnection)) {
-                using(MySqlCommand query = new(select, conn)) {
+
+            using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                using (MySqlCommand query = new MySqlCommand(select, conn)) {
+                    query.Parameters.AddWithValue("@CPF", UsuarioLogin.Cpf);
+                    query.Parameters.AddWithValue("@Senha", UsuarioLogin.Senha);
+
                     conn.Open();
                     using (MySqlDataReader reader = query.ExecuteReader()) {
-                        while (reader.Read()) {
+                        if (reader.Read()) {
                             usuarioAchado.Cpf = reader.GetString(reader.GetOrdinal("USU_CPF"));
                             usuarioAchado.Name = reader.GetString(reader.GetOrdinal("USU_Nome"));
                             usuarioAchado.Tipo.Description = reader.GetString(reader.GetOrdinal("TPU_TIPO"));
@@ -140,35 +139,40 @@ namespace CRUD_Tg.DAO{
         }
 
         public bool UpdateUsuario(Usuario usuario) {
-            string Update = "UPDATE USUARIOS SET USU_Nome = '" + usuario.Name + "' WHERE USU_Id = " + usuario.Id + ";" +
-                            "UPDATE USUARIOS SET USU_Cpf = '" + usuario.Cpf + "' WHERE USU_Id = " + usuario.Id + ";" +
-                            "UPDATE USUARIOS SET USU_Senha = '" + usuario.Senha + "' WHERE USU_Id = " + usuario.Id + ";" +
-                            "UPDATE USUARIOS SET USU_TPU_ID = " + usuario.Tipo.Id + " WHERE USU_Id = " + usuario.Id + ";";
+            string update = "UPDATE USUARIOS SET USU_Nome = @Nome, USU_Cpf = @Cpf, USU_Senha = @Senha, USU_TPU_ID = @TipoId WHERE USU_Id = @Id;";
 
             try {
-                using (MySqlConnection conn = new(StrConnection)) {
-                    using (MySqlCommand query = new(Update, conn)) {
+                using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                    using (MySqlCommand query = new MySqlCommand(update, conn)) {
+                        query.Parameters.AddWithValue("@Nome", usuario.Name);
+                        query.Parameters.AddWithValue("@Cpf", usuario.Cpf);
+                        query.Parameters.AddWithValue("@Senha", usuario.Senha);
+                        query.Parameters.AddWithValue("@TipoId", usuario.Tipo.Id);
+                        query.Parameters.AddWithValue("@TipoId", usuario.Tipo.Id);
+                        query.Parameters.AddWithValue("@Id", usuario.Id);
+
                         conn.Open();
                         query.ExecuteNonQuery();
                     }
                 }
                 return true;
-            }catch(MySqlException ex) {
+            } catch (MySqlException ex) {
                 return false;
             }
         }
 
         public bool DeleteUsuario(int id) {
-            string Delete = "DELETE FROM USUARIOS WHERE USU_ID = " + id;
+            string delete = "DELETE FROM USUARIOS WHERE USU_ID = @Id;";
 
-            using (MySqlConnection conn = new(StrConnection)) {
-                using (MySqlCommand query = new (Delete, conn)) {
+            using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                using (MySqlCommand query = new MySqlCommand(delete, conn)) {
+                    query.Parameters.AddWithValue("@Id", id);
                     conn.Open();
                     query.ExecuteNonQuery();
                 }
             }
-
             return true;
         }
+
     }
 }   
