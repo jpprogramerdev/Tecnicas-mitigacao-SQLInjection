@@ -24,7 +24,7 @@
         <label for="tipousuario_user">Tipo de usuario:</label>
         <select class="form-select" aria-label="Default select example" id="tipousuario_user" asp-for="@Model.Tipo.Id">
             @{
-                IDAO daoMysql = new DAOMysql();
+                IDAO daoMysql = new DAOMysql("server=localhost;uid=root;pwd=1234;database=CRUD_TG");
                 List<TipoUsuario> ListTipo = daoMysql.SelectTipos();
 
                 foreach(TipoUsuario tipo in ListTipo) {

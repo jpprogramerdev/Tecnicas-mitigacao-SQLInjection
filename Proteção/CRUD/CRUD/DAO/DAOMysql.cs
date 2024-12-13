@@ -7,8 +7,8 @@ namespace CRUD_Tg.DAO{
     public class DAOMysql : IDAO {
         public string StrConnection { get; private set; }
 
-        public DAOMysql(){
-            setStringConnection("server=localhost;uid=root;pwd=1234;database=CRUD_TG");
+        public DAOMysql(string connection){
+            setStringConnection(connection);
         }
 
         public void setStringConnection(string connection){
@@ -40,7 +40,7 @@ namespace CRUD_Tg.DAO{
         public List<Usuario> SelectUsuarios() {
             try {
                 List<Usuario> usuarios = new List<Usuario>();
-                string select = "SELECT USU_Nome, TPU_TIPO, USU_Cpf, USU_Senha, USU_Id, TPU_Id FROM usuarios LEFT JOIN tipos_usuario ON USU_TPU_Id = TPU_Id;";
+                string select = "SELECT * FROM Vw_DadosUsuario;";
 
                 using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
                     using (MySqlCommand query = new MySqlCommand(select, conn)) {
@@ -164,14 +164,18 @@ namespace CRUD_Tg.DAO{
         public bool DeleteUsuario(int id) {
             string delete = "DELETE FROM USUARIOS WHERE USU_ID = @Id;";
 
-            using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
-                using (MySqlCommand query = new MySqlCommand(delete, conn)) {
-                    query.Parameters.AddWithValue("@Id", id);
-                    conn.Open();
-                    query.ExecuteNonQuery();
+            try {
+                using (MySqlConnection conn = new MySqlConnection(StrConnection)) {
+                    using (MySqlCommand query = new MySqlCommand(delete, conn)) {
+                        query.Parameters.AddWithValue("@Id", id);
+                        conn.Open();
+                        query.ExecuteNonQuery();
+                    }
                 }
+                return true;
+            }catch(Exception ex) {
+                return false;
             }
-            return true;
         }
 
     }

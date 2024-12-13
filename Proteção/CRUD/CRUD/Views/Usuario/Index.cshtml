@@ -1,0 +1,9 @@
+﻿@model Usuario
+@{
+    Layout = "_Layout";
+
+    ViewData["Title"] = "Olá, " + Model.Name;
+}
+
+
+<p>Bem vindo, @Model.Name . Você é um usuário do tipo: @Model.Tipo.Description</p>

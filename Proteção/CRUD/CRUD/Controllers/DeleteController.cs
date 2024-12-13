@@ -1,12 +1,24 @@
 ﻿using CRUD_Tg.DAO;
+using CRUD_Tg.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRUD.Controllers {
     public class DeleteController : Controller {
-        public IDAO DAO { get; set; }
+        public IDAO banco { get; set; }
+        [HttpGet]
         public IActionResult Delete(int id) {
-            DAO = new DAOMysql();
-            DAO.DeleteUsuario(id);
+
+            Usuario usuarioLogado = new();
+            usuarioLogado.Name = User.FindFirst("NOME").Value;
+            usuarioLogado.Cpf = User.FindFirst("CPF").Value;
+            usuarioLogado.Tipo.Description = User.FindFirst("Tipo").Value;
+            if (usuarioLogado.Tipo.Description == "Administrador") {
+                banco = new DAOMysql("server=localhost;uid=root;pwd=1234;database=CRUD_TG");
+            } else {
+                banco = new DAOMysql("server=localhost;uid=CLIENTE;pwd=teste1234;database=CRUD_TG");
+            }
+
+            TempData["ApagarUsuario"] = banco.DeleteUsuario(id) == true ? "Usuario apagado com sucesso" : "Falha ao apagar o usuario";
             return RedirectToAction("Index","Reader");
         }
     }

@@ -3,6 +3,10 @@
     Layout = "_Layout";
 
     ViewData["Title"] = "Clientes cadastrados ";
+
+    if (TempData["ApagarUsuario"] != null) {
+        <p>@TempData["ApagarUsuario"]</p>
+    }
 }
 
 
